@@ -6,7 +6,8 @@ import Filter from './components/Filter';
 import PodcastCard from './components/PodcastCard';
 import PodcastModal from './components/PodcastModal';
 import FullScreenModal from './components/FullScreenModal';
-import { genres } from './data/data'; // Import the genres from data.js
+import { genres } from './data/data';
+import { formatDate } from './utils/utils';
 
 const App = () => {
   const [podcasts, setPodcasts] = useState([]);
@@ -25,20 +26,17 @@ const App = () => {
       const response = await axios.get('https://podcast-api.netlify.app/');
       
       const podcastsWithGenres = response.data.map(podcast => {
-        // Get the genre titles based on the genre IDs
-        const genreTitles = podcast.genres.map(genreId => {
-          const genre = genres.find(g => g.id === genreId);
-          return genre ? genre.title : null;
-        }).filter(Boolean); // Filter out any null values
-
         return {
           ...podcast,
-          genreTitles // Add the genre titles to the podcast object
+          genres: podcast.genres.map(genreId => 
+            genres.find(g => g.id === genreId) || { id: genreId, title: 'Unknown' }
+          ).filter(Boolean),
+          updated: formatDate(podcast.updated)
         };
       });
       
       setPodcasts(podcastsWithGenres);
-      setFilteredPodcasts(podcastsWithGenres); // Initialize filtered podcasts
+      setFilteredPodcasts(podcastsWithGenres);
       setError(null);
     } catch (err) {
       console.error("Error fetching podcasts:", err);
@@ -60,14 +58,21 @@ const App = () => {
   const handleSort = (sortOption) => {
     let sortedPodcasts = [...filteredPodcasts];
 
-    if (sortOption === 'latest') {
-      sortedPodcasts.sort((a, b) => new Date(b.updated) - new Date(a.updated));
-    } else if (sortOption === 'oldest') {
-      sortedPodcasts.sort((a, b) => new Date(a.updated) - new Date(b.updated));
-    } else if (sortOption === 'title-asc') {
-      sortedPodcasts.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortOption === 'title-desc') {
-      sortedPodcasts.sort((a, b) => b.title.localeCompare(a.title));
+    switch(sortOption) {
+      case 'latest':
+        sortedPodcasts.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+        break;
+      case 'oldest':
+        sortedPodcasts.sort((a, b) => new Date(a.updated) - new Date(b.updated));
+        break;
+      case 'title-asc':
+        sortedPodcasts.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'title-desc':
+        sortedPodcasts.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      default:
+        break;
     }
 
     setFilteredPodcasts(sortedPodcasts);
@@ -79,7 +84,7 @@ const App = () => {
   };
 
   const filterPodcasts = (term, genreId) => {
-    let filtered = podcasts;
+    let filtered = [...podcasts];
 
     if (term) {
       filtered = filtered.filter(podcast =>
@@ -88,7 +93,9 @@ const App = () => {
     }
 
     if (genreId) {
-      filtered = filtered.filter(podcast => podcast.genres.includes(genreId));
+      filtered = filtered.filter(podcast => 
+        podcast.genres.some(genre => genre.id === parseInt(genreId))
+      );
     }
 
     setFilteredPodcasts(filtered);
@@ -103,7 +110,7 @@ const App = () => {
         onSearch={handleSearch} 
         onSort={handleSort} 
         onGenreSelect={handleGenreSelect} 
-        genres={genres} // Pass the genres array to Filter
+        genres={genres}
       />
       
       <section className="podcast-card container">
