@@ -6,6 +6,7 @@ import Filter from './components/Filter';
 import PodcastCard from './components/PodcastCard';
 import PodcastModal from './components/PodcastModal';
 import FullScreenModal from './components/FullScreenModal';
+import { genres } from './data/data'; // Import the genres from data.js
 
 const App = () => {
   const [podcasts, setPodcasts] = useState([]);
@@ -15,16 +16,29 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState(''); // New state for selected genre
+  const [selectedGenre, setSelectedGenre] = useState('');
   const [noResultsMessage, setNoResultsMessage] = useState('');
-  const [genres, setGenres] = useState([]); // New state for genres
 
   const fetchPodcasts = async () => {
     try {
       setIsLoading(true);
       const response = await axios.get('https://podcast-api.netlify.app/');
-      setPodcasts(response.data);
-      setFilteredPodcasts(response.data); // Initialize filtered podcasts
+      
+      const podcastsWithGenres = response.data.map(podcast => {
+        // Get the genre titles based on the genre IDs
+        const genreTitles = podcast.genres.map(genreId => {
+          const genre = genres.find(g => g.id === genreId);
+          return genre ? genre.title : null;
+        }).filter(Boolean); // Filter out any null values
+
+        return {
+          ...podcast,
+          genreTitles // Add the genre titles to the podcast object
+        };
+      });
+      
+      setPodcasts(podcastsWithGenres);
+      setFilteredPodcasts(podcastsWithGenres); // Initialize filtered podcasts
       setError(null);
     } catch (err) {
       console.error("Error fetching podcasts:", err);
@@ -34,25 +48,13 @@ const App = () => {
     }
   };
 
-  const fetchGenres = async () => {
-    // Fetch genres from an API or define them statically
-    const genreData = [
-      { id: 'action', name: 'Action' },
-      { id: 'comedy', name: 'Comedy' },
-      { id: 'drama', name: 'Drama' },
-      // Add more genres as needed
-    ];
-    setGenres(genreData);
-  };
-
   useEffect(() => {
     fetchPodcasts();
-    fetchGenres(); // Fetch genres when the component mounts
   }, []);
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    filterPodcasts(term, selectedGenre); // Filter based on search term and selected genre
+    filterPodcasts(term, selectedGenre);
   };
 
   const handleSort = (sortOption) => {
@@ -71,12 +73,12 @@ const App = () => {
     setFilteredPodcasts(sortedPodcasts);
   };
 
-  const handleGenreSelect = (genre) => {
-    setSelectedGenre(genre);
-    filterPodcasts(searchTerm, genre); // Filter based on search term and selected genre
+  const handleGenreSelect = (genreId) => {
+    setSelectedGenre(genreId);
+    filterPodcasts(searchTerm, genreId);
   };
 
-  const filterPodcasts = (term, genre) => {
+  const filterPodcasts = (term, genreId) => {
     let filtered = podcasts;
 
     if (term) {
@@ -85,8 +87,8 @@ const App = () => {
       );
     }
 
-    if (genre) {
-      filtered = filtered.filter(podcast => podcast.genres.includes(genre));
+    if (genreId) {
+      filtered = filtered.filter(podcast => podcast.genres.includes(genreId));
     }
 
     setFilteredPodcasts(filtered);
@@ -101,7 +103,7 @@ const App = () => {
         onSearch={handleSearch} 
         onSort={handleSort} 
         onGenreSelect={handleGenreSelect} 
-        genres={genres} // Pass genres to Filter
+        genres={genres} // Pass the genres array to Filter
       />
       
       <section className="podcast-card container">

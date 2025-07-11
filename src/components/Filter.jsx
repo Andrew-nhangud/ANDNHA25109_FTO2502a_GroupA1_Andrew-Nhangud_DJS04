@@ -40,7 +40,7 @@ const Filter = ({ onSearch, onSort, onGenreSelect, genres }) => {
         <select id="genre-select" name="genre" value={selectedGenre} onChange={handleGenreChange}>
           <option value="">All Genres</option>
           {genres.map((genre) => (
-            <option key={genre.id} value={genre.id}>{genre.name}</option>
+            <option key={genre.id} value={genre.id}>{genre.title}</option>
           ))}
         </select>
         <select id="sort-select" name="sort" value={sortOption} onChange={handleSortChange}>
