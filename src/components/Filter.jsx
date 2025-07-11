@@ -9,19 +9,19 @@ const Filter = ({ onSearch, onSort, onGenreSelect, genres }) => {
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchTerm(value);
-    onSearch(value); // Call the onSearch function passed as a prop
+    onSearch(value);
   };
 
   const handleSortChange = (event) => {
     const value = event.target.value;
     setSortOption(value);
-    onSort(value); // Call the onSort function passed as a prop
+    onSort(value);
   };
 
   const handleGenreChange = (event) => {
     const value = event.target.value;
     setSelectedGenre(value);
-    onGenreSelect(value); // Call the onGenreSelect function passed as a prop
+    onGenreSelect(value);
   };
 
   return (
@@ -33,17 +33,31 @@ const Filter = ({ onSearch, onSort, onGenreSelect, genres }) => {
           placeholder="Search podcasts..."
           className="search-bar"
           value={searchTerm}
-          onChange={handleSearchChange} // Update search term on input change
+          onChange={handleSearchChange}
         />
       </div>
       <div className="dropdown-menus">
-        <select id="genre-select" name="genre" value={selectedGenre} onChange={handleGenreChange}>
+        <select 
+          id="genre-select" 
+          name="genre" 
+          value={selectedGenre} 
+          onChange={handleGenreChange}
+          aria-label="Filter by genre"
+        >
           <option value="">All Genres</option>
           {genres.map((genre) => (
-            <option key={genre.id} value={genre.id}>{genre.title}</option>
+            <option key={genre.id} value={genre.id}>
+              {genre.title}
+            </option>
           ))}
         </select>
-        <select id="sort-select" name="sort" value={sortOption} onChange={handleSortChange}>
+        <select 
+          id="sort-select" 
+          name="sort" 
+          value={sortOption} 
+          onChange={handleSortChange}
+          aria-label="Sort podcasts"
+        >
           <option value="">Sort By</option>
           <option value="latest">Last Updated (Newest First)</option>
           <option value="oldest">Last Updated (Oldest First)</option>
