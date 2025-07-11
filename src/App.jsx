@@ -149,17 +149,20 @@ const App = () => {
                 onSelect={setSelectedPodcast} 
               />
             ))}
-            
-            <Pagination
-              podcastsPerPage={podcastsPerPage}
-              totalPodcasts={filteredPodcasts.length}
-              currentPage={currentPage}
-              paginate={paginate}
-            />
           </>
         )}
       </section>
-      
+
+      {/* Pagination placed outside the podcast card container */}
+      <div className="pagination-container">
+        <Pagination
+          podcastsPerPage={podcastsPerPage}
+          totalPodcasts={filteredPodcasts.length}
+          currentPage={currentPage}
+          paginate={paginate}
+        />
+      </div>
+
       <PodcastModal 
         podcast={selectedPodcast} 
         onClose={() => setSelectedPodcast(null)} 
