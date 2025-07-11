@@ -1,14 +1,3 @@
-/**
- * Main application component.
- * 
- * This component fetches podcast data from an API and manages the state for
- * the list of podcasts, selected podcast, loading state, and error handling.
- * It renders the header, hero section, filter, and podcast cards, as well as
- * modals for detailed podcast information.
- * 
- * @component
- * @returns {JSX.Element} The rendered App component.
- */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Header from './components/Header';
@@ -20,17 +9,20 @@ import FullScreenModal from './components/FullScreenModal';
 
 const App = () => {
   const [podcasts, setPodcasts] = useState([]);
+  const [filteredPodcasts, setFilteredPodcasts] = useState([]);
   const [selectedPodcast, setSelectedPodcast] = useState(null);
   const [isFullScreenModalOpen, setIsFullScreenModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [noResultsMessage, setNoResultsMessage] = useState(''); // New state for no results message
 
-  // Function to fetch podcast data from the API
   const fetchPodcasts = async () => {
     try {
       setIsLoading(true);
       const response = await axios.get('https://podcast-api.netlify.app/');
       setPodcasts(response.data);
+      setFilteredPodcasts(response.data); // Initialize filtered podcasts
       setError(null);
     } catch (err) {
       console.error("Error fetching podcasts:", err);
@@ -40,32 +32,31 @@ const App = () => {
     }
   };
 
-  // Fetch podcasts when the component mounts
   useEffect(() => {
     fetchPodcasts();
   }, []);
 
-  const handleSelectPodcast = (podcast) => {
-    setSelectedPodcast(podcast);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedPodcast(null);
-  };
-
-  const handleOpenFullScreenModal = () => {
-    setIsFullScreenModalOpen(true);
-  };
-
-  const handleCloseFullScreenModal = () => {
-    setIsFullScreenModalOpen(false);
+  // Function to handle search input
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    if (term) {
+      const filtered = podcasts.filter(podcast =>
+        podcast.title.toLowerCase().includes(term.toLowerCase())
+      );
+      setFilteredPodcasts(filtered);
+      // Set no results message if no podcasts match the search
+      setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your search.' : '');
+    } else {
+      setFilteredPodcasts(podcasts); // Reset to original list if search term is empty
+      setNoResultsMessage(''); // Clear no results message
+    }
   };
 
   return (
     <div>
       <Header />
       <HeroSection />
-      <Filter />
+      <Filter onSearch={handleSearch} /> {/* Pass the search handler to Filter */}
       
       <section className="podcast-card container">
         {isLoading ? (
@@ -76,33 +67,31 @@ const App = () => {
         ) : error ? (
           <div className="error-container">
             <p className="error-message">{error}</p>
-            <button 
-              className="retry-button"
-              onClick={fetchPodcasts}
-            >
-              Retry
-            </button>
+            <button className="retry-button" onClick={fetchPodcasts}>Retry</button>
           </div>
         ) : (
-          podcasts.map((podcast) => (
-            <PodcastCard 
-              key={podcast.id} 
-              podcast={podcast} 
-              onSelect={handleSelectPodcast} 
-            />
-          ))
+          <>
+            {noResultsMessage && <p className="no-results-message">{noResultsMessage}</p>} {/* Display no results message */}
+            {filteredPodcasts.map((podcast) => (
+              <PodcastCard 
+                key={podcast.id} 
+                podcast={podcast} 
+                onSelect={setSelectedPodcast} 
+              />
+            ))}
+          </>
         )}
       </section>
       
       <PodcastModal 
         podcast={selectedPodcast} 
-        onClose={handleCloseModal} 
-        onViewMore={handleOpenFullScreenModal} 
+        onClose={() => setSelectedPodcast(null)} 
+        onViewMore={() => setIsFullScreenModalOpen(true)} 
       />
       <FullScreenModal 
         podcast={selectedPodcast} 
         isOpen={isFullScreenModalOpen} 
-        onClose={handleCloseFullScreenModal} 
+        onClose={() => setIsFullScreenModalOpen(false)} 
       />
     </div>
   );
