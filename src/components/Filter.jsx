@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import searchIcon from '../assets/images/search-icon.png';
 
-const Filter = ({ onSearch, onSort }) => {
+const Filter = ({ onSearch, onSort, onGenreSelect, genres }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState('');
 
   const handleSearchChange = (event) => {
     const value = event.target.value;
@@ -15,6 +16,12 @@ const Filter = ({ onSearch, onSort }) => {
     const value = event.target.value;
     setSortOption(value);
     onSort(value); // Call the onSort function passed as a prop
+  };
+
+  const handleGenreChange = (event) => {
+    const value = event.target.value;
+    setSelectedGenre(value);
+    onGenreSelect(value); // Call the onGenreSelect function passed as a prop
   };
 
   return (
@@ -30,6 +37,12 @@ const Filter = ({ onSearch, onSort }) => {
         />
       </div>
       <div className="dropdown-menus">
+        <select id="genre-select" name="genre" value={selectedGenre} onChange={handleGenreChange}>
+          <option value="">All Genres</option>
+          {genres.map((genre) => (
+            <option key={genre.id} value={genre.id}>{genre.name}</option>
+          ))}
+        </select>
         <select id="sort-select" name="sort" value={sortOption} onChange={handleSortChange}>
           <option value="">Sort By</option>
           <option value="latest">Last Updated (Newest First)</option>

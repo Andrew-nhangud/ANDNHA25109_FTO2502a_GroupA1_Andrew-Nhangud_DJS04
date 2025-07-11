@@ -15,7 +15,9 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState(''); // New state for selected genre
   const [noResultsMessage, setNoResultsMessage] = useState('');
+  const [genres, setGenres] = useState([]); // New state for genres
 
   const fetchPodcasts = async () => {
     try {
@@ -32,22 +34,25 @@ const App = () => {
     }
   };
 
+  const fetchGenres = async () => {
+    // Fetch genres from an API or define them statically
+    const genreData = [
+      { id: 'action', name: 'Action' },
+      { id: 'comedy', name: 'Comedy' },
+      { id: 'drama', name: 'Drama' },
+      // Add more genres as needed
+    ];
+    setGenres(genreData);
+  };
+
   useEffect(() => {
     fetchPodcasts();
+    fetchGenres(); // Fetch genres when the component mounts
   }, []);
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    if (term) {
-      const filtered = podcasts.filter(podcast =>
-        podcast.title.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredPodcasts(filtered);
-      setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your search.' : '');
-    } else {
-      setFilteredPodcasts(podcasts); // Reset to original list if search term is empty
-      setNoResultsMessage('');
-    }
+    filterPodcasts(term, selectedGenre); // Filter based on search term and selected genre
   };
 
   const handleSort = (sortOption) => {
@@ -66,11 +71,38 @@ const App = () => {
     setFilteredPodcasts(sortedPodcasts);
   };
 
+  const handleGenreSelect = (genre) => {
+    setSelectedGenre(genre);
+    filterPodcasts(searchTerm, genre); // Filter based on search term and selected genre
+  };
+
+  const filterPodcasts = (term, genre) => {
+    let filtered = podcasts;
+
+    if (term) {
+      filtered = filtered.filter(podcast =>
+        podcast.title.toLowerCase().includes(term.toLowerCase())
+      );
+    }
+
+    if (genre) {
+      filtered = filtered.filter(podcast => podcast.genres.includes(genre));
+    }
+
+    setFilteredPodcasts(filtered);
+    setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your criteria.' : '');
+  };
+
   return (
     <div>
       <Header />
       <HeroSection />
-      <Filter onSearch={handleSearch} onSort={handleSort} /> {/* Pass the search and sort handlers to Filter */}
+      <Filter 
+        onSearch={handleSearch} 
+        onSort={handleSort} 
+        onGenreSelect={handleGenreSelect} 
+        genres={genres} // Pass genres to Filter
+      />
       
       <section className="podcast-card container">
         {isLoading ? (
