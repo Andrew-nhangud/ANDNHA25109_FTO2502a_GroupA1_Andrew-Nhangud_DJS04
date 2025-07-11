@@ -1,23 +1,20 @@
-/**
- * Filter component for searching and filtering podcasts.
- * 
- * This component includes a search bar and dropdown menus for genre selection
- * and sorting options. It allows users to filter the list of podcasts displayed
- * on the landing page.
- * 
- * @component
- * @returns {JSX.Element} The rendered Filter component.
- */
 import React, { useState } from 'react';
 import searchIcon from '../assets/images/search-icon.png';
 
-const Filter = ({ onSearch }) => {
+const Filter = ({ onSearch, onSort }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortOption, setSortOption] = useState('');
 
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchTerm(value);
     onSearch(value); // Call the onSearch function passed as a prop
+  };
+
+  const handleSortChange = (event) => {
+    const value = event.target.value;
+    setSortOption(value);
+    onSort(value); // Call the onSort function passed as a prop
   };
 
   return (
@@ -33,16 +30,12 @@ const Filter = ({ onSearch }) => {
         />
       </div>
       <div className="dropdown-menus">
-        <select id="genre-select" name="genre">
-          <option value="">Genre</option>
-          <option value="action">Action</option>
-          <option value="comedy">Comedy</option>
-          <option value="drama">Drama</option>
-        </select>
-        <select id="sort-select" name="sort">
+        <select id="sort-select" name="sort" value={sortOption} onChange={handleSortChange}>
           <option value="">Sort By</option>
-          <option value="latest">Latest</option>
-          <option value="oldest">Oldest</option>
+          <option value="latest">Last Updated (Newest First)</option>
+          <option value="oldest">Last Updated (Oldest First)</option>
+          <option value="title-asc">Title (A-Z)</option>
+          <option value="title-desc">Title (Z-A)</option>
         </select>
       </div>
     </section>
