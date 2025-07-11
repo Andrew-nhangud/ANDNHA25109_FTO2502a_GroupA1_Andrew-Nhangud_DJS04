@@ -1,17 +1,6 @@
-/**
- * PodcastModal component for displaying detailed information about a selected podcast.
- * 
- * This modal shows the podcast's image, title, genres, last updated date, 
- * number of seasons, description, and a button to view more details.
- * 
- * @component
- * @param {Object} podcast - The podcast data to display.
- * @param {function} onClose - Function to close the modal.
- * @param {function} onViewMore - Function to handle viewing more details.
- * @returns {JSX.Element|null} The rendered PodcastModal component or null if no podcast is selected.
- */
 import React from 'react';
-import { formatDate, getGenreTitles } from '../utils/utils';
+import PropTypes from 'prop-types';
+import { formatDate } from '../utils/utils';
 
 const PodcastModal = ({ podcast, onClose, onViewMore }) => {
   if (!podcast) return null;
@@ -27,28 +16,47 @@ const PodcastModal = ({ podcast, onClose, onViewMore }) => {
         <hr className="line-diveder" />
 
         <div className="modalContent-info">
-          <img id="modalImage" src={podcast.image} alt={podcast.title} />
+          <img 
+            id="modalImage" 
+            src={podcast.image} 
+            alt={`Cover art for ${podcast.title}`} 
+          />
 
           <div className="modalContent-details">
-            <div id="modalGenres" className="genres">
-              {podcast.genres && podcast.genres.length > 0 
-                ? getGenreTitles(podcast.genres).join(", ") 
-                : "No genres available"}
+            <div className="genres">
+              {podcast.genres && podcast.genres.length > 0 ? (
+                podcast.genres.map((genre, index) => (
+                  <span 
+                    key={genre.id} 
+                    className="genre-tag"
+                  >
+                    {genre.title}
+                    {index < podcast.genres.length - 1 ? ', ' : ''}
+                  </span>
+                ))
+              ) : (
+                <span className="no-genres">No genres available</span>
+              )}
             </div>
 
-            <p id="modalLastUpdated">
-              Last updated: <span>{formatDate(podcast.updated)}</span>
+            <p className="last-updated">
+              Last updated: <span>{podcast.updated}</span>
             </p>
 
-            <div id="modalSeasons" className="seasons">
+            <div className="seasons">
               {podcast.seasons > 0 
-                ? `${podcast.seasons} season` 
-                : "No seasons available"}
+                ? `${podcast.seasons} season${podcast.seasons !== 1 ? 's' : ''}` 
+                : "No seasons available"
+              }
             </div>
 
-            <p id="modalDescription">{podcast.description}</p>
+            <p className="description">{podcast.description}</p>
 
-            <button id="viewMoreBtn" className="view-more-btn" onClick={onViewMore}>
+            <button 
+              className="view-more-btn" 
+              onClick={onViewMore}
+              aria-label="View more details"
+            >
               View More
             </button>
           </div>
@@ -56,6 +64,25 @@ const PodcastModal = ({ podcast, onClose, onViewMore }) => {
       </div>
     </div>
   );
+};
+
+PodcastModal.propTypes = {
+  podcast: PropTypes.shape({
+    id: PropTypes.string,
+    title: PropTypes.string,
+    image: PropTypes.string,
+    genres: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number,
+        title: PropTypes.string
+      })
+    ),
+    seasons: PropTypes.number,
+    updated: PropTypes.string,
+    description: PropTypes.string
+  }),
+  onClose: PropTypes.func.isRequired,
+  onViewMore: PropTypes.func.isRequired
 };
 
 export default PodcastModal;

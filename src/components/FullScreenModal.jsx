@@ -1,18 +1,6 @@
-/**
- * FullScreenModal component for displaying detailed information about a podcast.
- * 
- * This modal shows the podcast's image, title, genres, last updated date, 
- * seasons, and episodes. It allows users to expand and collapse seasons to 
- * view episode information.
- * 
- * @component
- * @param {Object} podcast - The podcast data to display.
- * @param {boolean} isOpen - Indicates if the modal is open.
- * @param {function} onClose - Function to close the modal.
- * @returns {JSX.Element|null} The rendered FullScreenModal component or null if not open.
- */
 import React, { useState } from 'react';
-import { formatDate, getGenreTitles } from '../utils/utils';
+import PropTypes from 'prop-types';
+import { formatDate } from '../utils/utils';
 
 const FullScreenModal = ({ podcast, isOpen, onClose }) => {
   const [expandedSeason, setExpandedSeason] = useState(null);
@@ -22,7 +10,7 @@ const FullScreenModal = ({ podcast, isOpen, onClose }) => {
   const seasonsArray = Array.from({ length: podcast.seasons }, (_, i) => ({
     id: i + 1,
     title: `Season ${i + 1}`,
-    episodes: 0 // Placeholder count
+    episodes: 0
   }));
 
   const toggleSeason = (seasonId) => {
@@ -47,12 +35,19 @@ const FullScreenModal = ({ podcast, isOpen, onClose }) => {
           <div className="podcast-info-text">
             <h2>{podcast.title}</h2>
             <div className="genres">
-              {podcast.genres?.length > 0 
-                ? getGenreTitles(podcast.genres).join(", ") 
-                : "No genres available"}
+              {podcast.genres?.length > 0 ? (
+                podcast.genres.map((genre, index) => (
+                  <span key={genre.id}>
+                    {genre.title}
+                    {index < podcast.genres.length - 1 ? ', ' : ''}
+                  </span>
+                ))
+              ) : (
+                <span>No genres available</span>
+              )}
             </div>
             <p className="last-updated">
-              Last updated: <span>{formatDate(podcast.updated)}</span>
+              Last updated: <span>{podcast.updated}</span>
             </p>
             <div className="seasons-count">
               {podcast.seasons > 0 
@@ -73,6 +68,7 @@ const FullScreenModal = ({ podcast, isOpen, onClose }) => {
                   <div 
                     className="season-header" 
                     onClick={() => toggleSeason(season.id)}
+                    aria-expanded={expandedSeason === season.id}
                   >
                     <span className="season-title">{season.title}</span>
                     <span className="episodes-count">
@@ -99,6 +95,25 @@ const FullScreenModal = ({ podcast, isOpen, onClose }) => {
       </div>
     </div>
   );
+};
+
+FullScreenModal.propTypes = {
+  podcast: PropTypes.shape({
+    id: PropTypes.string,
+    title: PropTypes.string,
+    image: PropTypes.string,
+    genres: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number,
+        title: PropTypes.string
+      })
+    ),
+    seasons: PropTypes.number,
+    updated: PropTypes.string,
+    description: PropTypes.string
+  }),
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired
 };
 
 export default FullScreenModal;
