@@ -15,7 +15,7 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [noResultsMessage, setNoResultsMessage] = useState(''); // New state for no results message
+  const [noResultsMessage, setNoResultsMessage] = useState('');
 
   const fetchPodcasts = async () => {
     try {
@@ -36,7 +36,6 @@ const App = () => {
     fetchPodcasts();
   }, []);
 
-  // Function to handle search input
   const handleSearch = (term) => {
     setSearchTerm(term);
     if (term) {
@@ -44,19 +43,34 @@ const App = () => {
         podcast.title.toLowerCase().includes(term.toLowerCase())
       );
       setFilteredPodcasts(filtered);
-      // Set no results message if no podcasts match the search
       setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your search.' : '');
     } else {
       setFilteredPodcasts(podcasts); // Reset to original list if search term is empty
-      setNoResultsMessage(''); // Clear no results message
+      setNoResultsMessage('');
     }
+  };
+
+  const handleSort = (sortOption) => {
+    let sortedPodcasts = [...filteredPodcasts];
+
+    if (sortOption === 'latest') {
+      sortedPodcasts.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+    } else if (sortOption === 'oldest') {
+      sortedPodcasts.sort((a, b) => new Date(a.updated) - new Date(b.updated));
+    } else if (sortOption === 'title-asc') {
+      sortedPodcasts.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortOption === 'title-desc') {
+      sortedPodcasts.sort((a, b) => b.title.localeCompare(a.title));
+    }
+
+    setFilteredPodcasts(sortedPodcasts);
   };
 
   return (
     <div>
       <Header />
       <HeroSection />
-      <Filter onSearch={handleSearch} /> {/* Pass the search handler to Filter */}
+      <Filter onSearch={handleSearch} onSort={handleSort} /> {/* Pass the search and sort handlers to Filter */}
       
       <section className="podcast-card container">
         {isLoading ? (
@@ -71,7 +85,7 @@ const App = () => {
           </div>
         ) : (
           <>
-            {noResultsMessage && <p className="no-results-message">{noResultsMessage}</p>} {/* Display no results message */}
+            {noResultsMessage && <p className="no-results-message">{noResultsMessage}</p>}
             {filteredPodcasts.map((podcast) => (
               <PodcastCard 
                 key={podcast.id} 
