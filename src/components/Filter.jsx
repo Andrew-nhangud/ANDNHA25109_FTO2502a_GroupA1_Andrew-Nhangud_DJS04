@@ -8,15 +8,29 @@
  * @component
  * @returns {JSX.Element} The rendered Filter component.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import searchIcon from '../assets/images/search-icon.png';
 
-const Filter = () => {
+const Filter = ({ onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+    onSearch(value); // Call the onSearch function passed as a prop
+  };
+
   return (
     <section className="filter container">
       <div className="searchBar-container">
         <img src={searchIcon} alt="search icon" />
-        <input type="text" placeholder="Search podcasts..." className="search-bar" />
+        <input
+          type="text"
+          placeholder="Search podcasts..."
+          className="search-bar"
+          value={searchTerm}
+          onChange={handleSearchChange} // Update search term on input change
+        />
       </div>
       <div className="dropdown-menus">
         <select id="genre-select" name="genre">
