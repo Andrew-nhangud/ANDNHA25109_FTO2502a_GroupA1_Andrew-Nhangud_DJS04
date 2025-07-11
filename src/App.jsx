@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Header from './components/Header';
@@ -6,12 +7,14 @@ import Filter from './components/Filter';
 import PodcastCard from './components/PodcastCard';
 import PodcastModal from './components/PodcastModal';
 import FullScreenModal from './components/FullScreenModal';
+import Pagination from './components/Pagination';
 import { genres } from './data/data';
 import { formatDate } from './utils/utils';
 
 const App = () => {
   const [podcasts, setPodcasts] = useState([]);
   const [filteredPodcasts, setFilteredPodcasts] = useState([]);
+  const [displayedPodcasts, setDisplayedPodcasts] = useState([]);
   const [selectedPodcast, setSelectedPodcast] = useState(null);
   const [isFullScreenModalOpen, setIsFullScreenModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,21 +22,21 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [noResultsMessage, setNoResultsMessage] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [podcastsPerPage] = useState(8);
 
   const fetchPodcasts = async () => {
     try {
       setIsLoading(true);
       const response = await axios.get('https://podcast-api.netlify.app/');
       
-      const podcastsWithGenres = response.data.map(podcast => {
-        return {
-          ...podcast,
-          genres: podcast.genres.map(genreId => 
-            genres.find(g => g.id === genreId) || { id: genreId, title: 'Unknown' }
-          ).filter(Boolean),
-          updated: formatDate(podcast.updated)
-        };
-      });
+      const podcastsWithGenres = response.data.map(podcast => ({
+        ...podcast,
+        genres: podcast.genres.map(genreId => 
+          genres.find(g => g.id === genreId) || { id: genreId, title: 'Unknown' }
+        ).filter(Boolean),
+        updated: formatDate(podcast.updated)
+      }));
       
       setPodcasts(podcastsWithGenres);
       setFilteredPodcasts(podcastsWithGenres);
@@ -50,9 +53,17 @@ const App = () => {
     fetchPodcasts();
   }, []);
 
+  useEffect(() => {
+    // Get current podcasts for the page
+    const indexOfLastPodcast = currentPage * podcastsPerPage;
+    const indexOfFirstPodcast = indexOfLastPodcast - podcastsPerPage;
+    setDisplayedPodcasts(filteredPodcasts.slice(indexOfFirstPodcast, indexOfLastPodcast));
+  }, [filteredPodcasts, currentPage, podcastsPerPage]);
+
   const handleSearch = (term) => {
     setSearchTerm(term);
     filterPodcasts(term, selectedGenre);
+    setCurrentPage(1);
   };
 
   const handleSort = (sortOption) => {
@@ -76,11 +87,13 @@ const App = () => {
     }
 
     setFilteredPodcasts(sortedPodcasts);
+    setCurrentPage(1);
   };
 
   const handleGenreSelect = (genreId) => {
     setSelectedGenre(genreId);
     filterPodcasts(searchTerm, genreId);
+    setCurrentPage(1);
   };
 
   const filterPodcasts = (term, genreId) => {
@@ -101,6 +114,8 @@ const App = () => {
     setFilteredPodcasts(filtered);
     setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your criteria.' : '');
   };
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div>
@@ -127,13 +142,20 @@ const App = () => {
         ) : (
           <>
             {noResultsMessage && <p className="no-results-message">{noResultsMessage}</p>}
-            {filteredPodcasts.map((podcast) => (
+            {displayedPodcasts.map((podcast) => (
               <PodcastCard 
                 key={podcast.id} 
                 podcast={podcast} 
                 onSelect={setSelectedPodcast} 
               />
             ))}
+            
+            <Pagination
+              podcastsPerPage={podcastsPerPage}
+              totalPodcasts={filteredPodcasts.length}
+              currentPage={currentPage}
+              paginate={paginate}
+            />
           </>
         )}
       </section>
