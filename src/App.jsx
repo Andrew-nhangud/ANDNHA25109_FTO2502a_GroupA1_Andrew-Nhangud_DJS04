@@ -59,28 +59,49 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    // Filter podcasts based on search term and selected genre
-    const filterPodcasts = () => {
-      let filtered = [...podcasts];
+  // Filter podcasts based on search term and selected genre
+  const filterPodcasts = () => {
+    let filtered = [...podcasts];
 
-      if (searchTerm) {
-        filtered = filtered.filter(podcast =>
-          podcast.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+    if (searchTerm) {
+      filtered = filtered.filter(podcast =>
+        podcast.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedGenre) {
+      filtered = filtered.filter(podcast => 
+        podcast.genres.some(genre => genre.id === parseInt(selectedGenre))
+      );
+    }
+
+    // Sort podcasts based on selected sort option
+    if (sortOption) {
+      switch(sortOption) {
+        case 'latest':
+          filtered.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+          break;
+        case 'oldest':
+          filtered.sort((a, b) => new Date(a.updated) - new Date(b.updated));
+          break;
+        case 'title-asc':
+          filtered.sort((a, b) => a.title.localeCompare(b.title));
+          break;
+        case 'title-desc':
+          filtered.sort((a, b) => b.title.localeCompare(a.title));
+          break;
+        default:
+          break;
       }
+    }
 
-      if (selectedGenre) {
-        filtered = filtered.filter(podcast => 
-          podcast.genres.some(genre => genre.id === parseInt(selectedGenre))
-        );
-      }
+    setFilteredPodcasts(filtered);
+    setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your criteria.' : '');
+  };
 
-      setFilteredPodcasts(filtered);
-      setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your criteria.' : '');
-    };
+  filterPodcasts();
+}, [searchTerm, selectedGenre, sortOption, podcasts]);
 
-    filterPodcasts();
-  }, [searchTerm, selectedGenre, podcasts]);
 
   useEffect(() => {
     // Get current podcasts for the page
