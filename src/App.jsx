@@ -10,6 +10,7 @@ import FullScreenModal from './components/FullScreenModal';
 import Pagination from './components/Pagination';
 import { genres } from './data/data';
 import { formatDate } from './utils/utils';
+import { usePodcastContext } from './PodcastContext';
 
 const App = () => {
   const [podcasts, setPodcasts] = useState([]);
@@ -19,11 +20,15 @@ const App = () => {
   const [isFullScreenModalOpen, setIsFullScreenModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('');
   const [noResultsMessage, setNoResultsMessage] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [podcastsPerPage] = useState(8);
+
+  const {
+    searchTerm, setSearchTerm,
+    selectedGenre, setSelectedGenre,
+    sortOption, setSortOption,
+    currentPage, setCurrentPage,
+    podcastsPerPage
+  } = usePodcastContext();
 
   const fetchPodcasts = async () => {
     try {
@@ -54,66 +59,35 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    // Filter podcasts based on search term and selected genre
+    const filterPodcasts = () => {
+      let filtered = [...podcasts];
+
+      if (searchTerm) {
+        filtered = filtered.filter(podcast =>
+          podcast.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      if (selectedGenre) {
+        filtered = filtered.filter(podcast => 
+          podcast.genres.some(genre => genre.id === parseInt(selectedGenre))
+        );
+      }
+
+      setFilteredPodcasts(filtered);
+      setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your criteria.' : '');
+    };
+
+    filterPodcasts();
+  }, [searchTerm, selectedGenre, podcasts]);
+
+  useEffect(() => {
     // Get current podcasts for the page
     const indexOfLastPodcast = currentPage * podcastsPerPage;
     const indexOfFirstPodcast = indexOfLastPodcast - podcastsPerPage;
     setDisplayedPodcasts(filteredPodcasts.slice(indexOfFirstPodcast, indexOfLastPodcast));
   }, [filteredPodcasts, currentPage, podcastsPerPage]);
-
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    filterPodcasts(term, selectedGenre);
-    setCurrentPage(1);
-  };
-
-  const handleSort = (sortOption) => {
-    let sortedPodcasts = [...filteredPodcasts];
-
-    switch(sortOption) {
-      case 'latest':
-        sortedPodcasts.sort((a, b) => new Date(b.updated) - new Date(a.updated));
-        break;
-      case 'oldest':
-        sortedPodcasts.sort((a, b) => new Date(a.updated) - new Date(b.updated));
-        break;
-      case 'title-asc':
-        sortedPodcasts.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'title-desc':
-        sortedPodcasts.sort((a, b) => b.title.localeCompare(a.title));
-        break;
-      default:
-        break;
-    }
-
-    setFilteredPodcasts(sortedPodcasts);
-    setCurrentPage(1);
-  };
-
-  const handleGenreSelect = (genreId) => {
-    setSelectedGenre(genreId);
-    filterPodcasts(searchTerm, genreId);
-    setCurrentPage(1);
-  };
-
-  const filterPodcasts = (term, genreId) => {
-    let filtered = [...podcasts];
-
-    if (term) {
-      filtered = filtered.filter(podcast =>
-        podcast.title.toLowerCase().includes(term.toLowerCase())
-      );
-    }
-
-    if (genreId) {
-      filtered = filtered.filter(podcast => 
-        podcast.genres.some(genre => genre.id === parseInt(genreId))
-      );
-    }
-
-    setFilteredPodcasts(filtered);
-    setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your criteria.' : '');
-  };
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -122,9 +96,9 @@ const App = () => {
       <Header />
       <HeroSection />
       <Filter 
-        onSearch={handleSearch} 
-        onSort={handleSort} 
-        onGenreSelect={handleGenreSelect} 
+        onSearch={setSearchTerm} 
+        onSort={setSortOption} 
+        onGenreSelect={setSelectedGenre} 
         genres={genres}
       />
       
@@ -153,7 +127,6 @@ const App = () => {
         )}
       </section>
 
-      {/* Pagination placed outside the podcast card container */}
       <div className="pagination-container">
         <Pagination
           podcastsPerPage={podcastsPerPage}
