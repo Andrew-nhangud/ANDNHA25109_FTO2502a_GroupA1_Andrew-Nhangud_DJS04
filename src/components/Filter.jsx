@@ -1,27 +1,25 @@
-import React, { useState } from 'react';
+// src/components/Filter.jsx
+import React from 'react';
+import { usePodcastContext } from '../PodcastContext';
 import searchIcon from '../assets/images/search-icon.png';
 
-const Filter = ({ onSearch, onSort, onGenreSelect, genres }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOption, setSortOption] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('');
+const Filter = ({ genres }) => {
+  const {
+    searchTerm, setSearchTerm,
+    sortOption, setSortOption,
+    selectedGenre, setSelectedGenre
+  } = usePodcastContext();
 
   const handleSearchChange = (event) => {
-    const value = event.target.value;
-    setSearchTerm(value);
-    onSearch(value);
+    setSearchTerm(event.target.value);
   };
 
   const handleSortChange = (event) => {
-    const value = event.target.value;
-    setSortOption(value);
-    onSort(value);
+    setSortOption(event.target.value);
   };
 
   const handleGenreChange = (event) => {
-    const value = event.target.value;
-    setSelectedGenre(value);
-    onGenreSelect(value);
+    setSelectedGenre(event.target.value);
   };
 
   return (
