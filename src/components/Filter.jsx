@@ -1,8 +1,14 @@
-// src/components/Filter.jsx
 import React from 'react';
 import { usePodcastContext } from '../PodcastContext';
 import searchIcon from '../assets/images/search-icon.png';
 
+/**
+ * Filter component for searching and filtering podcasts.
+ * 
+ * @param {Object} props - Component props.
+ * @param {Array} props.genres - List of podcast genres.
+ * @returns {JSX.Element} The rendered Filter component.
+ */
 const Filter = ({ genres }) => {
   const {
     searchTerm, setSearchTerm,
@@ -10,14 +16,17 @@ const Filter = ({ genres }) => {
     selectedGenre, setSelectedGenre
   } = usePodcastContext();
 
+  // Handle changes in the search input
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
+  // Handle changes in the sort option
   const handleSortChange = (event) => {
     setSortOption(event.target.value);
   };
 
+  // Handle changes in the selected genre
   const handleGenreChange = (event) => {
     setSelectedGenre(event.target.value);
   };

@@ -1,6 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * PodcastCard component for displaying individual podcast information.
+ * 
+ * @param {Object} props - Component props.
+ * @param {Object} props.podcast - The podcast data to display.
+ * @param {function} props.onSelect - Function to handle podcast selection.
+ * @returns {JSX.Element} The rendered PodcastCard component.
+ */
 const PodcastCard = ({ podcast, onSelect }) => {
   return (
     <div className="innerPodcast-card" onClick={() => onSelect(podcast)}>

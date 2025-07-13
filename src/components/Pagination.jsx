@@ -1,6 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * Pagination component for navigating through podcast pages.
+ * 
+ * @param {Object} props - Component props.
+ * @param {number} props.podcastsPerPage - Number of podcasts per page.
+ * @param {number} props.totalPodcasts - Total number of podcasts.
+ * @param {number} props.currentPage - Current active page number.
+ * @param {function} props.paginate - Function to handle page changes.
+ * @returns {JSX.Element|null} The rendered Pagination component or null if not needed.
+ */
 const Pagination = ({ podcastsPerPage, totalPodcasts, currentPage, paginate }) => {
   const pageNumbers = [];
 
@@ -9,7 +19,7 @@ const Pagination = ({ podcastsPerPage, totalPodcasts, currentPage, paginate }) =
   }
 
   if (pageNumbers.length <= 1) {
-    return null;
+    return null; // Return null if there's only one page
   }
 
   return (

@@ -2,10 +2,19 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { formatDate } from '../utils/utils';
 
+/**
+ * FullScreenModal component for displaying podcast details in full screen.
+ * 
+ * @param {Object} props - Component props.
+ * @param {Object} props.podcast - The podcast data to display.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {function} props.onClose - Function to close the modal.
+ * @returns {JSX.Element|null} The rendered FullScreenModal component or null if closed.
+ */
 const FullScreenModal = ({ podcast, isOpen, onClose }) => {
   const [expandedSeason, setExpandedSeason] = useState(null);
 
-  if (!isOpen || !podcast) return null;
+  if (!isOpen || !podcast) return null; // Return null if modal is not open or no podcast data
 
   const seasonsArray = Array.from({ length: podcast.seasons }, (_, i) => ({
     id: i + 1,
@@ -13,6 +22,7 @@ const FullScreenModal = ({ podcast, isOpen, onClose }) => {
     episodes: 0
   }));
 
+  // Toggle the expanded season
   const toggleSeason = (seasonId) => {
     setExpandedSeason(expandedSeason === seasonId ? null : seasonId);
   };

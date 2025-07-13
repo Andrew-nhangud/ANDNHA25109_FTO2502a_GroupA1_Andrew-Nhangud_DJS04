@@ -2,8 +2,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { formatDate } from '../utils/utils';
 
+/**
+ * PodcastModal component for displaying podcast details in a modal.
+ * 
+ * @param {Object} props - Component props.
+ * @param {Object} props.podcast - The podcast data to display.
+ * @param {function} props.onClose - Function to close the modal.
+ * @param {function} props.onViewMore - Function to view more details.
+ * @returns {JSX.Element|null} The rendered PodcastModal component or null if no podcast is selected.
+ */
 const PodcastModal = ({ podcast, onClose, onViewMore }) => {
-  if (!podcast) return null;
+  if (!podcast) return null; // Return null if no podcast is selected
 
   return (
     <div className={`modal ${podcast ? 'show' : ''}`}>
