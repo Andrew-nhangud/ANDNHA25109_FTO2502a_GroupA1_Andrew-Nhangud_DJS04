@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Header from './components/Header';
@@ -30,78 +29,77 @@ const App = () => {
     podcastsPerPage
   } = usePodcastContext();
 
-  const fetchPodcasts = async () => {
-    try {
-      setIsLoading(true);
-      const response = await axios.get('https://podcast-api.netlify.app/');
-      
-      const podcastsWithGenres = response.data.map(podcast => ({
-        ...podcast,
-        genres: podcast.genres.map(genreId => 
-          genres.find(g => g.id === genreId) || { id: genreId, title: 'Unknown' }
-        ).filter(Boolean),
-        updated: formatDate(podcast.updated)
-      }));
-      
-      setPodcasts(podcastsWithGenres);
-      setFilteredPodcasts(podcastsWithGenres);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching podcasts:", err);
-      setError("Failed to load podcasts. Please try again later.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchPodcasts();
+    const fetchPodcasts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get('https://podcast-api.netlify.app/');
+        
+        const podcastsWithGenres = response.data.map(podcast => ({
+          ...podcast,
+          genres: podcast.genres.map(genreId => 
+            genres.find(g => g.id === genreId) || { id: genreId, title: 'Unknown' }
+          ).filter(Boolean),
+          updated: formatDate(podcast.updated)
+        }));
+        
+        setPodcasts(podcastsWithGenres);
+        setFilteredPodcasts(podcastsWithGenres);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching podcasts:", err);
+        setError("Failed to load podcasts. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPodcasts(); // Call the function directly within the useEffect
   }, []);
 
   useEffect(() => {
-  // Filter podcasts based on search term and selected genre
-  const filterPodcasts = () => {
-    let filtered = [...podcasts];
+    // Filter podcasts based on search term and selected genre
+    const filterPodcasts = () => {
+      let filtered = [...podcasts];
 
-    if (searchTerm) {
-      filtered = filtered.filter(podcast =>
-        podcast.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedGenre) {
-      filtered = filtered.filter(podcast => 
-        podcast.genres.some(genre => genre.id === parseInt(selectedGenre))
-      );
-    }
-
-    // Sort podcasts based on selected sort option
-    if (sortOption) {
-      switch(sortOption) {
-        case 'latest':
-          filtered.sort((a, b) => new Date(b.updated) - new Date(a.updated));
-          break;
-        case 'oldest':
-          filtered.sort((a, b) => new Date(a.updated) - new Date(b.updated));
-          break;
-        case 'title-asc':
-          filtered.sort((a, b) => a.title.localeCompare(b.title));
-          break;
-        case 'title-desc':
-          filtered.sort((a, b) => b.title.localeCompare(a.title));
-          break;
-        default:
-          break;
+      if (searchTerm) {
+        filtered = filtered.filter(podcast =>
+          podcast.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
       }
-    }
 
-    setFilteredPodcasts(filtered);
-    setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your criteria.' : '');
-  };
+      if (selectedGenre) {
+        filtered = filtered.filter(podcast => 
+          podcast.genres.some(genre => genre.id === parseInt(selectedGenre))
+        );
+      }
 
-  filterPodcasts();
-}, [searchTerm, selectedGenre, sortOption, podcasts]);
+      // Sort podcasts based on selected sort option
+      if (sortOption) {
+        switch(sortOption) {
+          case 'latest':
+            filtered.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+            break;
+          case 'oldest':
+            filtered.sort((a, b) => new Date(a.updated) - new Date(b.updated));
+            break;
+          case 'title-asc':
+            filtered.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+          case 'title-desc':
+            filtered.sort((a, b) => b.title.localeCompare(a.title));
+            break;
+          default:
+            break;
+        }
+      }
 
+      setFilteredPodcasts(filtered);
+      setNoResultsMessage(filtered.length === 0 ? 'No podcasts found matching your criteria.' : '');
+    };
+
+    filterPodcasts();
+  }, [searchTerm, selectedGenre, sortOption, podcasts]);
 
   useEffect(() => {
     // Get current podcasts for the page
